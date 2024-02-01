@@ -210,6 +210,7 @@ def save_time_based_splits(
             val_size=val_size,
             overwrite=overwrite,
         )
+        return
 
     return _save_time_based_splits_gpu(
         data,
@@ -345,7 +346,7 @@ def _save_time_based_splits_cpu(
             "cudf, cupy, dask_cudf & merlin-core."
         )
 
-    if isinstance(data, dask.DataFrame):
+    if isinstance(data, dask.dataframe.DataFrame):
         data = Dataset(data)
     if not isinstance(partition_col, list):
         partition_col = [partition_col]
@@ -354,7 +355,8 @@ def _save_time_based_splits_cpu(
         shutil.rmtree(output_dir)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        data.to_parquet(tmpdirname, partition_on=partition_col)
+        # data.to_parquet(tmpdirname, partition_on=partition_col)
+        data.to_parquet(tmpdirname, partition_cols=partition_col)
         time_dirs = [f for f in sorted(os.listdir(tmpdirname)) if f.startswith(partition_col[0])]
         for d in tqdm(time_dirs, desc="Creating time-based splits"):
             path = os.path.join(tmpdirname, d)
